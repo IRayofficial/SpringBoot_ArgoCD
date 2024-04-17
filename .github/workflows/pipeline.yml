@@ -73,15 +73,19 @@ jobs:
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-
-          # Pull the latest changes from the remote branch and merge them
-          git pull origin deploy-to-staging --no-edit
-
+          
+          # Fetch the latest changes from the remote branch
+          git fetch origin deploy-to-staging
+          
+          # Merge the changes from the remote branch into your local branch
+          git merge origin/deploy-to-staging --no-edit
+          
           # Push the changes to the updated branch
           git push origin HEAD:deploy-to-staging
-
+          
           # Create a pull request using GitHub CLI
           gh pr create --base main --head deploy-to-staging --title "Deploy ${{ env.PROJECT_VERSION }} to staging" --token ${{ secrets.GITHUB_TOKEN }}
+      
 
       - name: Wait for ArgoCD deployment
         run: |
