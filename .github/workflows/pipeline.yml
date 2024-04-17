@@ -28,7 +28,7 @@ jobs:
       - name: Run integration tests
         run: ./gradlew test --tests '*.*Integration*'
 
-  deploy-to-staging-and-create-pr:
+  deploy-to-staging-and-run-further-tests:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/release' || (github.event_name == 'pull_request' && github.base_ref == 'release' && github.head_ref == 'main')
     needs: run-unit-and-integration-tests
@@ -67,39 +67,27 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
-      - name: Check if values_staging.yml exists and contains changes
-        run: |
-          if [ -f "values_staging.yml" ]; then
-            if [ -n "$(git diff --exit-code values_staging.yml)" ]; then
-              echo "values_staging.yml has changes."
-            else
-              echo "values_staging.yml exists but has no changes."
-              exit 1
-            fi
-          else
-            echo "values_staging.yml does not exist."
-            exit 1
-          fi
-
-      - name: Configure Git user identity
+      - name: Commit and push changes to GitOps repository
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
-
-      - name: Commit changes to a new branch
-        run: |
-          git checkout -b update-staging
           git add values_staging.yml
-          git commit -m "Update staging environment with version ${{ env.PROJECT_VERSION }}"
-          git push --set-upstream origin update-staging
+          git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          git push
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          title: Update staging environment with latest changes
-          body: |
-            This PR updates the staging environment with the latest changes.
-          labels: staging, automated
+      - name: Wait for ArgoCD deployment
+        run: |
+          # Add commands to check the status of ArgoCD deployment here
+          # You may use ArgoCD CLI or API to check the deployment status
+          # Example:
+          # argocd app wait <APP_NAME> --timeout 300
+
+      - name: Run system tests
+        run: |
+          # Add the execution of further tests here 
+          # You may use Newman for system testing
+          # Example:
+          # newman run collection.json -e environment.json
 
   deploy-to-production:
     runs-on: ubuntu-latest
@@ -117,13 +105,11 @@ jobs:
           version=$(grep 'tag:' values_staging.yml | awk '{print $2}')
           sed -i "s/tag: .*/tag: $version/" values_production.yml
 
-      - name: Configure Git user identity
+      - name: Commit and push changes to GitOps repository
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
 
-      - name: Commit and push changes to GitOps repository
-        run: |
           git add values_production.yml
           git commit --allow-empty -m "Deploy $version to production"
           git push
