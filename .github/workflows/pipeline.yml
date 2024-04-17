@@ -77,7 +77,7 @@ jobs:
           git push origin HEAD:deploy-to-staging
 
           # Create a pull request using GitHub CLI
-          gh pr create --base main --head deploy-to-staging --title "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          gh pr create --base main --head deploy-to-staging --title "Deploy ${{ env.PROJECT_VERSION }} to staging" --token ${{ secrets.GITHUB_TOKEN }}
       
 
       - name: Wait for ArgoCD deployment
