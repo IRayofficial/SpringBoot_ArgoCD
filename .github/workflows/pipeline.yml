@@ -74,8 +74,8 @@ jobs:
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
 
-          # Pull the latest changes from the remote branch
-          git pull origin deploy-to-staging
+          # Pull the latest changes from the remote branch and merge them
+          git pull origin deploy-to-staging --no-edit
 
           # Push the changes to the updated branch
           git push origin HEAD:deploy-to-staging
