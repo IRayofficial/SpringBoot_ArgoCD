@@ -118,5 +118,9 @@ jobs:
           title: "Update production values to version $version"
           body: |
             This PR updates the production values to match the latest version deployed in staging.
+          labels: |
+            auto-generated
+            deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
