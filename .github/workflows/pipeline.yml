@@ -105,10 +105,18 @@ jobs:
           version=$(grep 'tag:' values_staging.yml | awk '{print $2}')
           sed -i "s/tag: .*/tag: $version/" values_production.yml
 
-      - name: Commit and push changes to GitOps repository
+      - name: Commit changes to a new branch
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "github-actions"
+          git checkout -b update-production
           git add values_production.yml
-          git commit --allow-empty -m "Deploy $version to production"
-          git push
+          git commit -m "Update production values to version $version"
+          git push origin update-production
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Update production values to version $version"
+          body: |
+            This PR updates the production values to match the latest version deployed in staging.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
