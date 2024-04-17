@@ -67,6 +67,20 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
+      - name: Check if values_staging.yml exists and contains changes
+        run: |
+          if [ -f "values_staging.yml" ]; then
+            if [ -n "$(git diff --exit-code values_staging.yml)" ]; then
+              echo "values_staging.yml has changes."
+            else
+              echo "values_staging.yml exists but has no changes."
+              exit 1
+            fi
+          else
+            echo "values_staging.yml does not exist."
+            exit 1
+          fi
+
       - name: Configure Git user identity
         run: |
           git config --global user.email "github-actions@github.com"
@@ -103,10 +117,13 @@ jobs:
           version=$(grep 'tag:' values_staging.yml | awk '{print $2}')
           sed -i "s/tag: .*/tag: $version/" values_production.yml
 
-      - name: Commit and push changes to GitOps repository
+      - name: Configure Git user identity
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
+
+      - name: Commit and push changes to GitOps repository
+        run: |
           git add values_production.yml
           git commit --allow-empty -m "Deploy $version to production"
           git push
