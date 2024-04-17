@@ -73,7 +73,20 @@ jobs:
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git push
+
+      - name: Push to new branch
+        run: |
+          git branch -M production-deploy-$GITHUB_RUN_ID
+          git push -u origin production-deploy-$GITHUB_RUN_ID
+
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "production-deploy-$GITHUB_RUN_ID"
+          destination_branch: "main"
+          pr_title: "Deploy $version to production"
+          pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
+          github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
 
       - name: Install Node.js
         uses: actions/setup-node@v2
