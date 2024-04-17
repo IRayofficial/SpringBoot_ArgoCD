@@ -131,6 +131,7 @@ jobs:
           git config --global user.name "github-actions"
           git add values_production.yml
           git commit --allow-empty -m "Preparing to deploy $version to production"
+          git push
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
