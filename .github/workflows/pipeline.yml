@@ -136,5 +136,5 @@ jobs:
       run: sudo npm install -g newman
 
     - name: Run system tests
-      run: newman run tests/your-test-file.json
+      run: newman run tests/Tests.json
 
