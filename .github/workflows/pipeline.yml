@@ -73,19 +73,14 @@ jobs:
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-
-      - name: Push to new branch
-        run: |
-          git branch -M production-deploy-$GITHUB_RUN_ID
-          git push -u origin production-deploy-$GITHUB_RUN_ID
+          git push
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: "production-deploy-$GITHUB_RUN_ID"
           destination_branch: "main"
-          pr_title: "Deploy $version to production"
-          pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
+          pr_title: "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          pr_body: "A new version of the application has been prepared for deployment to staging. Please review and approve this pull request."
           github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
 
       - name: Install Node.js
@@ -97,7 +92,7 @@ jobs:
         run: sudo npm install -g newman
 
       - name: Run system tests
-        run: newman run Tests.json
+        run: newman run tests/system/your_tests.json
 
       - name: Wait for ArgoCD deployment
         run: |
@@ -106,7 +101,7 @@ jobs:
           # Example:
           # argocd app wait <APP_NAME> --timeout 300
 
-      - name: Run system tests
+      - name: Run further system tests
         run: |
           # Add the execution of further tests here 
           # You may use Newman for system testing
@@ -117,40 +112,29 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.actor }}/ArgoCD_GitOps
+          token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
+          ref: main
 
-    - name: Checkout GitOps repository
-      uses: actions/checkout@v2
-      with:
-        repository: ${{ github.actor }}/ArgoCD_GitOps
-        token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
-        ref: main
+      - name: Update image tag with version from staging in production values.yml
+        run: |
+          version=$(grep 'tag:' values_staging.yml | awk '{print $2}')
+          sed -i "s/tag: .*/tag: $version/" values_production.yml
 
-    - name: Update image tag with version from staging in production values.yml
-      run: |
-        version=$(grep 'tag:' values_staging.yml | awk '{print $2}')
-        sed -i "s/tag: .*/tag: $version/" values_production.yml
+      - name: Commit changes
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+          git add values_production.yml
+          git commit --allow-empty -m "Preparing to deploy $version to production"
 
-    - name: Commit changes
-      run: |
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "github-actions"
-        git add values_production.yml
-        git commit --allow-empty -m "Preparing to deploy $version to production"
-
-    - name: Push to new branch
-      run: |
-        git branch -M production-deploy-$GITHUB_RUN_ID
-        git push -u origin production-deploy-$GITHUB_RUN_ID
-
-    - name: Create Pull Request
-      uses: repo-sync/pull-request@v2
-      with:
-        source_branch: "production-deploy-$GITHUB_RUN_ID"
-        destination_branch: "main"
-        pr_title: "Deploy $version to production"
-        pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
-        github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
-
-
-
-
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "main"
+          pr_title: "Deploy $version to production"
+          pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
+          github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
