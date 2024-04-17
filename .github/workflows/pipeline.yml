@@ -130,3 +130,4 @@ jobs:
           pr_title: "Deploy $version to production"
           pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
           github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
+
