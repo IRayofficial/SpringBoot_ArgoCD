@@ -127,13 +127,18 @@ jobs:
         pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
         github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
 
-    - name: Install Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: 14
+  newman_system_tests:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
 
-    - name: Install Newman
-      run: sudo npm install -g newman
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
 
-    - name: Run system tests
-      run: newman run tests/your-test-file.json
+      - name: Install Newman
+        run: sudo npm install -g newman
+
+      - name: Run system tests
+        run: newman run tests/your-test-file.json
