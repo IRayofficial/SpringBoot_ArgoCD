@@ -67,25 +67,13 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
-      - name: Create Pull Request in GitOps repository
+      - name: Commit and push changes to GitOps repository
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          
-          # Fetch the latest changes from the remote branch
-          git fetch origin deploy-to-staging
-          
-          # Merge the changes from the remote branch into your local branch
-          git merge origin/deploy-to-staging --no-edit
-          
-          # Push the changes to the updated branch
-          git push origin HEAD:deploy-to-staging
-          
-          # Create a pull request using GitHub CLI
-          gh pr create --base main --head deploy-to-staging --title "Deploy ${{ env.PROJECT_VERSION }} to staging" --token ${{ secrets.GITHUB_TOKEN }}
-      
+          git push
 
       - name: Wait for ArgoCD deployment
         run: |
@@ -135,4 +123,3 @@ jobs:
             deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
