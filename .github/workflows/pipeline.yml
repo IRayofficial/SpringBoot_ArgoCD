@@ -67,13 +67,18 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
-      - name: Commit and push changes to GitOps repository
+      - name: Create Pull Request in GitOps repository
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git push
+          # Push the changes to a new branch
+          git push origin HEAD:deploy-to-staging
+
+          # Create a pull request using GitHub CLI
+          gh pr create --base main --head deploy-to-staging --title "Deploy ${{ env.PROJECT_VERSION }} to staging"
+      
 
       - name: Wait for ArgoCD deployment
         run: |
