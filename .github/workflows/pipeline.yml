@@ -93,7 +93,7 @@ jobs:
         run: sudo npm install -g newman
 
       - name: Run system tests
-        run: newman run test/system/Tests.json
+        run: newman run src/test/system/Tests.json
 
       - name: Wait for ArgoCD deployment
         run: |
