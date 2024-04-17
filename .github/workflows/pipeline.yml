@@ -75,6 +75,15 @@ jobs:
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
           git push
 
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "main"
+          pr_title: "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          pr_body: "A new version of the application has been prepared for deployment to staging. Please review and approve this pull request."
+          github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
+
+
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
@@ -84,7 +93,7 @@ jobs:
         run: sudo npm install -g newman
 
       - name: Run system tests
-        run: newman run tests/system/Tests.json
+        run: newman run test/system/Tests.json
 
       - name: Wait for ArgoCD deployment
         run: |
