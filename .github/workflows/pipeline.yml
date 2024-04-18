@@ -79,16 +79,23 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
+      - name: Fetch changes from production-deploy branch
+        run: |
+          git fetch origin production-deploy
+
+      - name: Merge changes from production-deploy branch
+        run: |
+          git merge origin/production-deploy
+
       - name: Create and switch to production-deploy branch
         run: |
           git checkout -b production-deploy
-          git push -u origin production-deploy
 
       - name: Commit changes and push to production-deploy branch
         run: |
           git add values_staging.yml
           git commit -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git push origin production-deploy
+          git push -u origin production-deploy
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
