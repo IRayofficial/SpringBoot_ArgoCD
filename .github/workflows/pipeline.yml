@@ -89,13 +89,20 @@ jobs:
           git add values_staging.yml
           git commit -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
 
-      - name: Push changes and create Pull Request
+      - name: Push changes to a new branch
         run: |
-          git push origin main
-          sudo snap install hub --classic
-          hub pull-request -m "Deploy ${{ env.PROJECT_VERSION }} to staging" -b main -h ${{ github.actor }}:production-deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git checkout -b deployment/${GITHUB_RUN_ID}
+          git push -u origin deployment/${GITHUB_RUN_ID}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          body: "A new version of the application has been prepared for deployment to staging. Please review and approve this pull request."
+          labels: staging
+          base: main
+          head: deployment/${GITHUB_RUN_ID}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for ArgoCD deployment
         run: |
