@@ -79,15 +79,16 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
-      - name: Commit and push changes to GitOps repository
+      - name: Create and switch to production-deploy branch
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "github-actions"
-          git fetch origin production-deploy  # Aktualisiere den Remote-Zweig
-          git merge origin/production-deploy   # Führe den Merge durch, um lokale und entfernte Änderungen zu kombinieren
+          git checkout -b production-deploy
+          git push -u origin production-deploy
+
+      - name: Commit changes and push to production-deploy branch
+        run: |
           git add values_staging.yml
-          git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git push origin production-deploy    # Änderungen auf den Branch production-deploy pushen
+          git commit -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          git push origin production-deploy
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
