@@ -81,13 +81,10 @@ jobs:
 
       - name: Set Git user for this repository
         run: |
-          git config user.email "${GITHUB_EMAIL}"
-          git config user.name "${GITHUB_ACTOR}"
-
-      - name: Commit changes
-        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
           git add values_staging.yml
-          git commit -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          git commit --allow-empty -m "Preparing to deploy $version to staging"
 
       - name: Push changes to a new branch
         run: |
@@ -135,10 +132,17 @@ jobs:
           git add values_production.yml
           git commit --allow-empty -m "Preparing to deploy $version to production"
 
+      - name: Push changes to a new branch
+        run: |
+          git checkout -b deployment/${GITHUB_RUN_ID}
+          git push -u origin deployment/${GITHUB_RUN_ID}
+
       - name: Create Pull Request
-        uses: repo-sync/pull-request@v2
+        uses: peter-evans/create-pull-request@v3
         with:
-          destination_branch: "main"
-          pr_title: "Deploy $version to production"
-          pr_body: "A new version of the application has been prepared for deployment to production. Please review and approve this pull request."
-          github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
+          title: "Deploy ${{ env.PROJECT_VERSION }} to staging"
+          body: "A new version of the application has been prepared for deployment to staging. Please review and approve this pull request."
+          labels: production
+          base: main
+          head: deployment/${GITHUB_RUN_ID}
+          token: ${{ secrets.GITHUB_TOKEN }}
