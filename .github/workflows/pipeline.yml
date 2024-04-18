@@ -83,10 +83,11 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
+          git fetch origin production-deploy  # Aktualisiere den Remote-Zweig
+          git merge origin/production-deploy   # Führe den Merge durch, um lokale und entfernte Änderungen zu kombinieren
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git pull origin production-deploy  # Änderungen aus dem entfernten Repository holen
-          git push origin production-deploy   # Änderungen auf den Branch production-deploy pushen
+          git push origin production-deploy    # Änderungen auf den Branch production-deploy pushen
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
