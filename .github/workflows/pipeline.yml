@@ -61,12 +61,10 @@ jobs:
         with:
           node-version: 20.12.2
 
-
       - name: Run system tests
         run: |
           npm install -g newman
           newman run https://github.com/IRayofficial/SpringBoot_ArgoCD/blob/068c0b4433041c4b6da0dd8585c72c24be5728a9/src/test/system/Tests.json
-
 
       - name: Checkout GitOps repository
         uses: actions/checkout@v4
