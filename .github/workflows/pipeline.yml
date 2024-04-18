@@ -85,9 +85,7 @@ jobs:
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-
-      - name: Push to new branch
-        run: |
+          git pull origin main
           git checkout -b production-deploy
           git push -u origin production-deploy
 
