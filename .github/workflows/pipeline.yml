@@ -79,6 +79,11 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
+      - name: Set Git user for this repository
+        run: |
+          git config user.email "${GITHUB_EMAIL}"
+          git config user.name "${GITHUB_ACTOR}"
+
       - name: Commit changes
         run: |
           git add values_staging.yml
