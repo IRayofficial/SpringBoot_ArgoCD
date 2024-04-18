@@ -79,32 +79,17 @@ jobs:
         run: |
           sed -i "s/tag: .*/tag: ${{ env.PROJECT_VERSION }}/" values_staging.yml
 
-      - name: Fetch changes from production-deploy branch
-        run: |
-          git fetch origin production-deploy
-
-      - name: Merge changes from production-deploy branch
-        run: |
-          git merge origin/production-deploy
-
-      - name: Create and switch to production-deploy branch
-        run: |
-          git checkout -b production-deploy
-
-      - name: Commit changes and push to production-deploy branch
+      - name: Commit changes
         run: |
           git add values_staging.yml
           git commit -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git push -u origin production-deploy
 
-      - name: Create Pull Request
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: "production-deploy"
-          destination_branch: "main"
-          pr_title: "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          pr_body: "A new version of the application has been prepared for deployment to staging. Please review and approve this pull request."
-          github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
+      - name: Push changes and create Pull Request
+        run: |
+          git push origin main
+          hub pull-request -m "Deploy ${{ env.PROJECT_VERSION }} to staging" -b main -h ${{ github.actor }}:production-deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for ArgoCD deployment
         run: |
