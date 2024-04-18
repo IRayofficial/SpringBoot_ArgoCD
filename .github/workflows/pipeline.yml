@@ -92,6 +92,7 @@ jobs:
       - name: Push changes and create Pull Request
         run: |
           git push origin main
+          sudo snap install hub --classic
           hub pull-request -m "Deploy ${{ env.PROJECT_VERSION }} to staging" -b main -h ${{ github.actor }}:production-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
