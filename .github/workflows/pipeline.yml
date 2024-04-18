@@ -82,17 +82,16 @@ jobs:
           pr_body: "A new version of the application has been prepared for deployment to staging. Please review and approve this pull request."
           github_token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
 
-
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 20.12.2
 
-      - name: Install Newman
-        run: sudo npm install -g newman
 
       - name: Run system tests
-        run: newman run https://github.com/IRayofficial/SpringBoot_ArgoCD/blob/068c0b4433041c4b6da0dd8585c72c24be5728a9/src/test/system/Tests.json
+        run: |
+          npm install -g newman
+          newman run https://github.com/IRayofficial/SpringBoot_ArgoCD/blob/068c0b4433041c4b6da0dd8585c72c24be5728a9/src/test/system/Tests.json
 
       - name: Wait for ArgoCD deployment
         run: |
