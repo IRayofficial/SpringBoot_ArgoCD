@@ -85,8 +85,8 @@ jobs:
           git config --global user.name "github-actions"
           git add values_staging.yml
           git commit --allow-empty -m "Deploy ${{ env.PROJECT_VERSION }} to staging"
-          git checkout -b production-deploy
-          git push --set-upstream origin production-deploy
+          git pull origin production-deploy  # Änderungen aus dem entfernten Repository holen
+          git push origin production-deploy   # Änderungen auf den Branch production-deploy pushen
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
